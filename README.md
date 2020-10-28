@@ -44,7 +44,7 @@ GET:    /companies/{id}/restaurants
 
 In terminal
 ```bash
-curl -XPOST "http://localhost:9060/users" -H 'Content-Type: application/json' -d'{"name": "Kalli Johnson", "ssn": "1809922519", "email": "kalli@kassagerdin.is", "phone": "5885522", "bio": "Fun to be alive", "comment": "Love dates", "language": "is" }'
+curl -XPOST "http://localhost:9060/users" -H 'Content-Type: application/json' -d'{"name": "Kalli Johnson", "ssn": "1946151684", "email": "kalli@kassagerdin.is", "phone": "5885522", "bio": "Fun to be alive", "comment": "Love dates", "language": "is" }'
 ```
 
 In JavaScript
