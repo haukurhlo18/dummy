@@ -1,10 +1,14 @@
 const uuid = require('uuid');
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
+app.use(express.json());
 
 const create = {
     number: (length) => {
         return Math.floor((Math.random() * Math.pow(10, length)));
+    },
+    datetime: () => {
+        return (new Date()).toISOString();
     },
     user: () => {
         return {
@@ -105,11 +109,12 @@ app.get('/users/:id', function (req, res) {
 })
 
 app.post('/users', function (req, res) {
+    const datetime = create.datetime();
     const user = {
         id: uuid.v4(),
         ...req.body,
-        created_at: (new Date('October 15, 1996 05:35:32')).toISOString(),
-        updated_at: (new Date('October 15, 1996 05:35:32')).toISOString(),
+        created_at: datetime,
+        updated_at: datetime,
     };
     users.push(user);
     res.send(user);
@@ -121,8 +126,8 @@ app.put('/users/:id', function (req, res) {
     if (!user.length) {
         return res.status(404).send({ error: 404, message: 'User not found' });
     }
-    user.push(req.body);
-    res.send(user);
+    user[0] = Object.assign(user[0], req.body);
+    res.send(user[0]);
 })
 
 app.get('/restaurants', function (req, res) {
