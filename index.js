@@ -98,7 +98,7 @@ app.get('/users', function (req, res) {
 app.get('/users/:id', function (req, res) {
     const id = req.params.id;
     const user = users.filter(user => user.id === id);
-    if (!user) {
+    if (!user.length) {
         return res.status(404).send({ error: 404, message: 'User not found' });
     }
     res.send(user);
@@ -118,7 +118,7 @@ app.post('/users', function (req, res) {
 app.put('/users/:id', function (req, res) {
     const id = req.params.id;
     const user = users.filter(user => user.id === id);
-    if (!user) {
+    if (!user.length) {
         return res.status(404).send({ error: 404, message: 'User not found' });
     }
     user.push(req.body);
