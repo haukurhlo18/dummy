@@ -29,6 +29,13 @@ GET:    /users/{id}
 PUT:    /users/{id}
 
 GET:    /restaurants
+POST:   /restaurants
+
+GET:    /companies
+POST:   /companies
+GET:    /companies/{id}
+PUT:    /companies/{id}
+GET:    /companies/{id}/restaurants
 ```
 
 ## Example usage
