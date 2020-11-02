@@ -96,6 +96,7 @@ const create = {
             company_id: companies[0] ? companies[0].id : null,
             name: 'Matarkofinn',
             contact: create.contact(),
+            menu_groups: [],
             ...data,
             created_at: datetime,
             updated_at: datetime,
@@ -121,20 +122,38 @@ const create = {
             default_price: 1000,
             period_start: "2020-10-28",
             period_end: "2020-10-28",
-            archive: true,
+            archived: false,
             ...data,
             created_at: datetime,
             updated_at: datetime,
         }
     },
-    menugroups: (quantity = 10) => {
-        const menugroups = [];
-
-        for (let i = quantity; i > 0; i--) {
-            menugroups.push(create.restaurant());
+    menu: (data = {}) => {
+        const datetime = create.datetime();
+        return {
+            id: uuid.v4(),
+            menu_group_id: uuid.v4(),
+            registration_closes: datetime,
+            price: create.number(4),
+            headcount: create.number(2),
+            date: "2020-10-28",
+            meals: [],
+            ...data,
+            created_at: datetime,
+            updated_at: datetime,
         }
-        return menugroups;
-    }
+    },
+    meal: (data = {}) => {
+        const datetime = create.datetime();
+        return {
+            id: uuid.v4(),
+            name: 'Lasgna með hvítlausbrauði',
+            description: '',
+            ...data,
+            created_at: datetime,
+            updated_at: datetime,
+        }
+    },
 }
 
 const getById = (resources, id) => {
@@ -154,6 +173,9 @@ const companies = create.companies(4);
 const restaurants = create.restaurants(5);
 const contacts = create.tmpContacts;
 const companyRestaurant = {};
+const menuGroups = {};
+const menuMeals = {};
+
 
 restaurants.forEach((restaurant, i) => {
     const pos = i % companies.length;
@@ -230,6 +252,59 @@ app.put('/companies/:id', function (req, res) {
     }
     company[0] = Object.assign(company[0], req.body);
     res.send(company[0]);
+});
+
+app.post('/menu-groups', function (req, res) {
+    const restaurant = getById(restaurants, req.query.restaurant_id);
+    if (!restaurant) {
+        return res.status(404).send({ error: 404, message: 'Restaurant not found' });
+    }
+    const menuGroup = create.menugroup(req.body);
+    restaurant.menu_groups.push(menuGroup);
+    if (!menuGroups[menuGroup.id]) {
+        menuGroups[menuGroup.id] = [];
+    }
+    res.send(menuGroup);
+});
+
+app.get('/menus', function (req, res) {
+    const menuGroupId = req.query.menu_group_id;
+    if (!menuGroups[menuGroupId]) {
+        return res.status(404).send({ error: 404, message: 'Menu group not found' });
+    }
+
+    res.send(menuGroups[menuGroupId]);
+});
+
+app.post('/menus', function (req, res) {
+    const menuGroupId = req.query.menu_group_id;
+    if (!menuGroups[menuGroupId]) {
+        return res.status(404).send({ error: 404, message: 'Menu group not found' });
+    }
+    const menuGroup = create.menu({ menu_group_id: menuGroupId, ...req.body });
+    menuGroups[menuGroupId].push(menuGroup);
+
+    res.send(menuGroup);
+});
+
+app.post('/meals', function (req, res) {
+    const restaurantId = req.query.restaurant_id;
+    const menuId = req.query.menu_id;
+
+    let responseSent = false;
+    for (const [key, group] of Object.entries(menuGroups)) {
+        group.forEach(menu => {
+           if (menu.id === menuId) {
+               responseSent = true;
+               const meal = create.meal(req.body);
+               menu.meals.push(meal);
+               res.send(meal);
+           }
+        });
+    }
+    if (!responseSent) {
+        return res.status(404).send({ error: 404, message: 'Menu group not found' });
+    }
 });
 
 app.get('/companies/:id/restaurants', function (req, res) {
