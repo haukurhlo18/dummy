@@ -36,6 +36,13 @@ POST:   /companies
 GET:    /companies/{id}
 PUT:    /companies/{id}
 GET:    /companies/{id}/restaurants
+
+POST:   /menu-groups
+
+GET:    /menus
+POST:   /menus
+
+POST:   /meals
 ```
 
 ## Example usage
