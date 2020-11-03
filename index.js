@@ -211,11 +211,12 @@ app.post('/users', function (req, res) {
 });
 
 app.put('/users/:id', function (req, res) {
+    const datetime = create.datetime();
     const user = users.filter(user => user.id === req.params.id);
     if (!user.length) {
         return res.status(404).send({ error: 404, message: 'User not found' });
     }
-    user[0] = Object.assign(user[0], req.body);
+    user[0] = Object.assign(user[0], req.body, { updated_at: datetime });
     res.send(user[0]);
 });
 
@@ -246,11 +247,12 @@ app.get('/companies/:id', function (req, res) {
 });
 
 app.put('/companies/:id', function (req, res) {
+    const datetime = create.datetime();
     const company = companies.filter(c => c.id === req.params.id);
     if (!company.length) {
         return res.status(404).send({ error: 404, message: 'Company not found' });
     }
-    company[0] = Object.assign(company[0], req.body);
+    company[0] = Object.assign(company[0], req.body, { updated_at: datetime });
     res.send(company[0]);
 });
 
@@ -265,6 +267,25 @@ app.post('/menu-groups', function (req, res) {
         menuGroups[menuGroup.id] = [];
     }
     res.send(menuGroup);
+});
+
+app.put('/menu-groups/:id', function (req, res) {
+    const datetime = create.datetime();
+    const menuGroupId = req.params.id;
+
+    let responseSent = false;
+    restaurants.forEach(restaurant => {
+        restaurant.menu_groups.forEach(group => {
+            if (group.id === menuGroupId) {
+                responseSent = true;
+                group = Object.assign(group, req.body, { id: menuGroupId }, { updated_at: datetime });
+                res.send(group);
+            }
+        });
+    });
+    if (!responseSent) {
+        return res.status(404).send({ error: 404, message: 'Menu group not found' });
+    }
 });
 
 app.get('/menus', function (req, res) {
