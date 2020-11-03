@@ -38,6 +38,7 @@ PUT:    /companies/{id}
 GET:    /companies/{id}/restaurants
 
 POST:   /menu-groups
+PUT:    /menu-groups/{id}
 
 GET:    /menus
 POST:   /menus
