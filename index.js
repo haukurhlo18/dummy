@@ -164,6 +164,17 @@ const getById = (resources, id) => {
     return resource[0];
 }
 
+const menuGroupExists = (id) => {
+    for (let i = 0; i < restaurants.length; i++) {
+        for (let j = 0; j < restaurants[i].menu_groups.length; j++) {
+            if (restaurants[i].menu_groups[j].id === id) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 const exists = (resources, id) => {
     return getById(resources, id) !== null;
 }
@@ -290,11 +301,19 @@ app.put('/menu-groups/:id', function (req, res) {
 
 app.get('/menus', function (req, res) {
     const menuGroupId = req.query.menu_group_id;
-    if (!menuGroups[menuGroupId]) {
-        return res.status(404).send({ error: 404, message: 'Menu group not found' });
+    if (menuGroupId) {
+        if (!menuGroupExists(menuGroupId)) {
+            return res.status(404).send({ error: 404, message: 'Menu group not found' });
+        }
+        const response = menuGroups[menuGroupId] ? menuGroups[menuGroupId] : [];
+        return res.send(response);
     }
 
-    res.send(menuGroups[menuGroupId]);
+    let menus = [];
+    for (const [key, subMenus] of Object.entries(menuGroups)) {
+        menus = menus.concat(subMenus);
+    }
+    res.send(menus);
 });
 
 app.post('/menus', function (req, res) {
@@ -306,6 +325,25 @@ app.post('/menus', function (req, res) {
     menuGroups[menuGroupId].push(menuGroup);
 
     res.send(menuGroup);
+});
+
+app.put('/menus/:id', function (req, res) {
+    const datetime = create.datetime();
+    const menuId = req.params.id;
+
+    let responseSent = false;
+    for (const [key, menus] of Object.entries(menuGroups)) {
+        menus.forEach(menu => {
+            if (menu.id === menuId) {
+                responseSent = true;
+                menu = Object.assign(menu, req.body, { id: menuId }, { updated_at: datetime });
+                res.send(menu);
+            }
+        });
+    }
+    if (!responseSent) {
+        return res.status(404).send({ error: 404, message: 'Menu not found' });
+    }
 });
 
 app.post('/meals', function (req, res) {
