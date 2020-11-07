@@ -366,6 +366,27 @@ app.post('/meals', function (req, res) {
     }
 });
 
+app.put('/meals/{id}', function (req, res) {
+    const datetime = create.datetime();
+    const mealId = req.params.id;
+
+    let responseSent = false;
+    for (const [key, group] of Object.entries(menuGroups)) {
+        group.forEach(menu => {
+            group.meals.forEach(meal => {
+                if (meal.id === mealId) {
+                    responseSent = true;
+                    menu = Object.assign(menu, req.body, { id: mealId }, { updated_at: datetime });
+                    res.send(menu);
+                }
+            });
+        });
+    }
+    if (!responseSent) {
+        return res.status(404).send({ error: 404, message: 'Meal not found' });
+    }
+});
+
 app.get('/companies/:id/restaurants', function (req, res) {
     const company = getById(companies, req.params.id);
     if (!company) {
