@@ -366,25 +366,14 @@ app.post('/meals', function (req, res) {
     }
 });
 
-app.put('/meals/{id}', function (req, res) {
-    const datetime = create.datetime();
+app.delete('/meals/:id', function (req, res) {
     const mealId = req.params.id;
-
-    let responseSent = false;
     for (const [key, group] of Object.entries(menuGroups)) {
         group.forEach(menu => {
-            group.meals.forEach(meal => {
-                if (meal.id === mealId) {
-                    responseSent = true;
-                    menu = Object.assign(menu, req.body, { id: mealId }, { updated_at: datetime });
-                    res.send(menu);
-                }
-            });
+            menu.meals = menu.meals.filter(meal => meal.id !== mealId);
         });
     }
-    if (!responseSent) {
-        return res.status(404).send({ error: 404, message: 'Meal not found' });
-    }
+    return res.send({ success: true });
 });
 
 app.get('/companies/:id/restaurants', function (req, res) {
