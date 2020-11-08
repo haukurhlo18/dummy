@@ -346,6 +346,17 @@ app.put('/menus/:id', function (req, res) {
     }
 });
 
+app.delete('/menus/:id/meals', function (req, res) {
+    const menuId = req.params.id;
+    const mealId = req.params.meal_id;
+    for (const [key, group] of Object.entries(menuGroups)) {
+        group.forEach(menu => {
+            menu.meals = menu.meals.filter(meal => meal.id !== mealId);
+        });
+    }
+    return res.send({ success: true });
+});
+
 app.post('/meals', function (req, res) {
     const restaurantId = req.query.restaurant_id;
     const menuId = req.query.menu_id;
