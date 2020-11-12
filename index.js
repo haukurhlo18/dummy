@@ -181,7 +181,7 @@ const exists = (resources, id) => {
 
 const users = create.users(12);
 const companies = create.companies(4);
-const restaurants = create.restaurants(5);
+const restaurants = create.restaurants(1);
 const contacts = create.tmpContacts;
 const companyRestaurant = {};
 const menuGroups = {};
@@ -272,7 +272,10 @@ app.post('/menu-groups', function (req, res) {
     if (!restaurant) {
         return res.status(404).send({ error: 404, message: 'Restaurant not found' });
     }
-    const menuGroup = create.menugroup(req.body);
+    const menuGroup = create.menugroup({
+        restaurant_id: restaurant.id,
+        ...req.body
+    });
     restaurant.menu_groups.push(menuGroup);
     if (!menuGroups[menuGroup.id]) {
         menuGroups[menuGroup.id] = [];
@@ -346,15 +349,49 @@ app.put('/menus/:id', function (req, res) {
     }
 });
 
-app.delete('/menus/:id/meals', function (req, res) {
-    const menuId = req.params.id;
-    const mealId = req.params.meal_id;
+const findMenu = (menuId) => {
+    const response = {
+        group_id: null,
+        index: null,
+    };
     for (const [key, group] of Object.entries(menuGroups)) {
-        group.forEach(menu => {
-            menu.meals = menu.meals.filter(meal => meal.id !== mealId);
+        group.forEach((menu, index) => {
+            if (menu.id === menuId) {
+                response.group_id = key;
+                response.index = index;
+            }
         });
     }
-    return res.send({ success: true });
+    return response;
+};
+
+app.delete('/menus/:id/meals', function (req, res) {
+    const mealId = req.query.meal_id;
+    const menuId = req.params.id;
+    const menu = findMenu(menuId);
+
+    if (!menu.group_id) {
+        return res.status(404).send({ error: 404, message: 'Menu not found', menuGroups });
+    }
+
+    let mealIndex = null;
+    menuGroups[menu.group_id][menu.index].meals.forEach((meal, index) => {
+        if (meal.id === mealId) {
+            mealIndex = index;
+        }
+        console.log({
+            mealId,
+            meal,
+            index,
+        });
+    });
+
+    if (mealIndex !== null) {
+        menuGroups[menu.group_id][menu.index].meals.splice(mealIndex, mealIndex + 1);
+        return res.send({ success: true });
+    } else {
+        return res.status(404).send({ error: 404, message: 'Meal not found', menuGroups });
+    }
 });
 
 app.post('/meals', function (req, res) {
